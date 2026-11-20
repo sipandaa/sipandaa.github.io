@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SIPANDA | Sistem Informasi Penilaian Akademik Dahlan</title>
+<meta name="description" content="SIPANDA: Sistem Informasi Penilaian Akademik Dahlan, ITB Ahmad Dahlan Lamongan.">
+<meta name="theme-color" content="#0b3f78">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="sipanda-icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta property="og:title" content="SIPANDA | Sistem Informasi Penilaian Akademik Dahlan">
+<meta property="og:image" content="sipanda-icon-512.png">
+<style>
+  /* =========================================================
+     SIPANDA - Sistem Informasi Penilaian Akademik Dahlan
+     ITB Ahmad Dahlan Lamongan. Software by Fahmi Yusuf
+     Halaman ini menampilkan aplikasi Apps Script secara penuh layar.
+     ========================================================= */
+  :root{--navy:#0b3f78;--biru:#1565c0;--hijau:#3a9b1e;--emas:#f2b705}
+  html,body{margin:0;height:100%;background:#fff;font-family:"Segoe UI",Roboto,Arial,sans-serif}
+  iframe{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:#fff}
+  #muat{position:fixed;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:24px;
+    background:radial-gradient(120% 80% at 50% 0%,#eef5ff 0,#fff 60%);transition:opacity .45s}
+  #muat.hilang{opacity:0;pointer-events:none}
+  #muat img{width:min(520px,86vw);height:auto}
+  .bar{width:180px;height:5px;border-radius:3px;background:#e3ebf3;overflow:hidden}
+  .bar i{display:block;width:40%;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--hijau),var(--biru));animation:jalan 1.1s ease-in-out infinite}
+  @keyframes jalan{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+  .ket{color:#5b6b7c;font-size:14px}
+  .lambat{display:none;font-size:13px;color:#5b6b7c}
+  .lambat a{color:var(--biru);font-weight:600}
+  .kredit{position:absolute;bottom:calc(16px + env(safe-area-inset-bottom));font-size:12px;color:#8a97a5}
+  @media (prefers-reduced-motion:reduce){.bar i{animation:none;width:100%}}
+</style>
+</head>
+<body>
+<div id="muat">
+  <img src="sipanda-logo.png" alt="SIPANDA - Sistem Informasi Penilaian Akademik Dahlan, ITBADLA">
+  <div class="bar"><i></i></div>
+  <div class="ket" id="ket">Memuat SIPANDA...</div>
+  <div class="lambat" id="lambat">Memuat agak lama? <a id="langsung" href="#" target="_top">Buka langsung</a></div>
+  <div class="kredit">Software by Fahmi Yusuf</div>
+</div>
+<iframe id="app" title="SIPANDA" allow="clipboard-write"></iframe>
+<script>
+  /* ====== GANTI DENGAN LINK /exec APPS SCRIPT ANDA (tanpa ?page=...) ====== */
+  var LINK_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbw7iVXJzsujEHRa9JG34Ly3BGf5XGxgCmOORmoID1J9APwR7cvuEfcQnkVuDZpksDh0/exec';
+  /* ======================================================================= */
+
+  // Portal mahasiswa: tambahkan ?mahasiswa di belakang alamat
+  var mhs = /(^|[?&])(mahasiswa|portal)/i.test(location.search);
+  var url = LINK_APPS_SCRIPT + (mhs ? '?page=mahasiswa' : '');
+  document.title = (mhs ? 'Portal Nilai Mahasiswa' : 'SIPANDA') + ' | Sistem Informasi Penilaian Akademik Dahlan';
+  document.getElementById('ket').textContent = mhs ? 'Memuat portal nilai mahasiswa...' : 'Memuat SIPANDA...';
+  var frame = document.getElementById('app');
+  document.getElementById('langsung').href = url;
+  if (LINK_APPS_SCRIPT.indexOf('https://') === 0) {
+    frame.src = url;
+    frame.addEventListener('load', function () { document.getElementById('muat').className = 'hilang'; });
+    setTimeout(function () { document.getElementById('lambat').style.display = 'block'; }, 8000);
+  } else {
+    document.getElementById('ket').textContent = 'Link aplikasi belum diisi di file index.html.';
+  }
+</script>
+</body>
+</html>
