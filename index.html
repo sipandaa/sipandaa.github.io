@@ -49,11 +49,12 @@
   var LINK_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbw7iVXJzsujEHRa9JG34Ly3BGf5XGxgCmOORmoID1J9APwR7cvuEfcQnkVuDZpksDh0/exec';
   /* ======================================================================= */
 
-  // Portal mahasiswa: tambahkan ?mahasiswa di belakang alamat
-  var mhs = /(^|[?&])(mahasiswa|portal)/i.test(location.search);
-  var url = LINK_APPS_SCRIPT + (mhs ? '?page=mahasiswa' : '');
-  document.title = (mhs ? 'Portal Nilai Mahasiswa' : 'SIPANDA') + ' | Sistem Informasi Penilaian Akademik Dahlan';
-  document.getElementById('ket').textContent = mhs ? 'Memuat portal nilai mahasiswa...' : 'Memuat SIPANDA...';
+  // Portal mahasiswa: tambahkan ?mahasiswa di belakang alamat. Kuis mahasiswa: ?kuis
+  var kuis = /(^|[?&])kuis/i.test(location.search);
+  var mhs = !kuis && /(^|[?&])(mahasiswa|portal)/i.test(location.search);
+  var url = LINK_APPS_SCRIPT + (kuis ? '?page=kuis' : (mhs ? '?page=mahasiswa' : ''));
+  document.title = (kuis ? 'Kuis SIPANDA' : (mhs ? 'Portal Nilai Mahasiswa' : 'SIPANDA')) + ' | Sistem Informasi Penilaian Akademik Dahlan';
+  document.getElementById('ket').textContent = kuis ? 'Memuat kuis...' : (mhs ? 'Memuat portal nilai mahasiswa...' : 'Memuat SIPANDA...');
   var frame = document.getElementById('app');
   document.getElementById('langsung').href = url;
   if (LINK_APPS_SCRIPT.indexOf('https://') === 0) {
