@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lab SQL | SIPANDA</title>
+<meta name="description" content="Lab SQL SIPANDA: simulasi MySQL di browser untuk latihan basis data. ITB Ahmad Dahlan Lamongan.">
+<meta name="theme-color" content="#023f3a">
+<link rel="icon" type="image/png" href="../favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap" media="print" onload="this.media='all'">
+<link rel="preload" href="sql-wasm.wasm" as="fetch" type="application/wasm" crossorigin>
+<style>
+:root{
+  --pri:#035c54;--pri-d:#023f3a;--pri-l:#e3efed;--gold:#f7ca1e;
+  --bg:#f4f6f5;--card:#fff;--ink:#14201c;--ink2:#34413c;--mut:#5f6c66;--line:#dbe2df;--line2:#edf1ef;
+  --red:#b42318;--red-l:#fdecea;--ok:#035c54;
+  --fh:"IBM Plex Serif",Georgia,serif;--fb:"IBM Plex Sans","Segoe UI",Roboto,Arial,sans-serif;--fm:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--fb);-webkit-font-smoothing:antialiased}
+button,select,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+code{font-family:var(--fm);font-size:.92em;background:var(--line2);padding:1px 5px;border-radius:4px}
+
+.top{height:56px;background:var(--pri-d);color:#fff;display:flex;align-items:center;gap:12px;padding:0 18px;position:sticky;top:0;z-index:30}
+.mark{width:34px;height:34px;border-radius:8px;background:var(--gold);color:var(--pri-d);display:flex;align-items:center;justify-content:center;flex:none}
+.mark svg{width:20px;height:20px}
+.brand b{display:block;font-family:var(--fh);font-weight:600;font-size:17px;line-height:1.1}
+.brand span{font-size:12px;color:#9fc2bb}
+.top .sp{flex:1}
+.chip{font-size:13px;color:#cfe2de;white-space:nowrap}
+.chip b{color:#fff;font-family:var(--fm);font-weight:500}
+#btnLaci{display:none;height:36px;padding:0 12px;border-radius:7px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;cursor:pointer}
+
+.wrap{display:grid;grid-template-columns:300px minmax(0,1fr);min-height:calc(100vh - 56px)}
+aside{background:#fff;border-right:1px solid var(--line);padding:18px 16px 24px;overflow:auto;max-height:calc(100vh - 56px);position:sticky;top:56px}
+aside h3{font-size:12.5px;font-weight:600;color:var(--mut);margin:20px 0 8px;letter-spacing:.02em}
+aside h3:first-child{margin-top:0}
+aside select{width:100%;height:40px;border:1px solid var(--line);border-radius:8px;padding:0 10px;background:#fff}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:#fff;font-weight:500;font-size:14px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:#b9c4bf;background:#f7f9f8}
+.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}
+.btn.pri:hover{background:var(--pri-d)}
+.btn.sm{min-height:32px;padding:0 10px;font-size:13px}
+.btn svg{width:16px;height:16px}
+.kecil{font-size:13px;color:var(--mut);margin:6px 0}
+.tutup{display:none;justify-content:flex-end}
+
+.tb{border:1px solid var(--line2);border-radius:8px;margin-bottom:6px;background:#fff}
+.tb summary{display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer;list-style:none;font-size:14px}
+.tb summary::-webkit-details-marker{display:none}
+.tb summary::before{content:"";width:6px;height:6px;border-right:1.5px solid var(--mut);border-bottom:1.5px solid var(--mut);transform:rotate(-45deg);transition:transform .15s;flex:none}
+.tb[open] summary::before{transform:rotate(45deg)}
+.tn{font-family:var(--fm);font-weight:500}
+.tag{font-size:11px;background:var(--pri-l);color:var(--pri-d);padding:0 6px;border-radius:4px}
+.cnt{margin-left:auto;font-size:12px;color:var(--mut)}
+.tb ul{list-style:none;margin:0;padding:0 10px 6px 24px;font-size:13px}
+.tb li{display:flex;justify-content:space-between;gap:8px;padding:2px 0;border-top:1px dashed var(--line2)}
+.cn{font-family:var(--fm)}
+.cn.pk{font-weight:600;color:var(--pri-d)}
+.cn.pk::after{content:" PK";font-size:10px;color:var(--pri)}
+.ct{color:var(--mut);font-family:var(--fm);font-size:12px}
+.tbact{display:flex;gap:6px;padding:0 10px 10px 24px}
+.tbact button{font-size:12px;border:1px solid var(--line);background:#fff;border-radius:6px;padding:3px 8px;cursor:pointer}
+.tbact button:hover{border-color:var(--pri);color:var(--pri)}
+.lg h4{font-size:13px;font-weight:600;margin:12px 0 4px;color:var(--ink2)}
+.lg button{display:block;width:100%;text-align:left;border:0;background:none;padding:5px 8px;border-radius:6px;font-size:13.5px;color:var(--ink2);cursor:pointer}
+.lg button:hover{background:var(--pri-l);color:var(--pri-d)}
+.foot{margin-top:22px;padding-top:14px;border-top:1px solid var(--line2);font-size:12px;color:var(--mut)}
+
+main{padding:22px 26px 60px;min-width:0}
+h1{font-family:var(--fh);font-weight:600;font-size:26px;margin:0}
+.lead{color:var(--mut);margin:4px 0 16px;font-size:14.5px;max-width:70ch}
+.ed{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;border-bottom:1px solid var(--line2);background:#fbfcfc}
+.bar .sp{flex:1}
+.kbd{font-family:var(--fm);font-size:11px;opacity:.8}
+.mode{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.mode label{padding:6px 10px;font-size:13px;cursor:pointer}
+.mode input{position:absolute;opacity:0;pointer-events:none}
+.mode label:has(input:checked){background:var(--pri-l);color:var(--pri-d);font-weight:600}
+.code{display:flex;height:300px;position:relative}
+#gutter{flex:none;width:44px;margin:0;padding:12px 8px 12px 0;text-align:right;font:14px/1.6 var(--fm);color:#9aa7a2;background:#f7f9f8;border-right:1px solid var(--line2);overflow:hidden;white-space:pre;user-select:none}
+#editor{flex:1;border:0;resize:none;outline:none;padding:12px 14px;font:14px/1.6 var(--fm);color:var(--ink);background:#fff;white-space:pre;overflow:auto;tab-size:2}
+
+#hasil{margin-top:18px;display:flex;flex-direction:column;gap:12px}
+.blok{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
+.blok.err{border-color:#efc9c4;background:#fffafa}
+.qhead{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
+.qno{flex:none;width:22px;height:22px;border-radius:5px;background:var(--line2);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;color:var(--ink2)}
+.qhead code{background:none;padding:0;color:var(--mut);white-space:pre-wrap;word-break:break-word;font-size:12.5px}
+.msg{margin:0;font:13.5px/1.55 var(--fm);white-space:pre-wrap;color:var(--ok)}
+.err .msg{color:var(--red)}
+.saran{margin:6px 0 0;font-size:13.5px;color:var(--ink2)}
+.err .saran::before{content:"Petunjuk: ";font-weight:600}
+.info{margin:8px 0 0;font:12.5px var(--fm);color:var(--mut)}
+.tw{overflow:auto;max-height:420px;border:1px solid var(--line2);border-radius:6px}
+table{border-collapse:collapse;font-size:13.5px;min-width:100%}
+th,td{padding:7px 12px;border-bottom:1px solid var(--line2);text-align:left;white-space:nowrap}
+th{position:sticky;top:0;background:#f4f7f6;font-weight:600;font-size:12.5px;color:var(--ink2)}
+td.n{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--fm);font-size:13px}
+td.nul{color:#9aa7a2;font-style:italic;font-family:var(--fm);font-size:12.5px}
+tbody tr:hover td{background:#fafcfb}
+.ascii{margin:0;font:13px/1.45 var(--fm);overflow:auto;max-height:420px;background:#0f1b18;color:#d9ece7;padding:12px 14px;border-radius:6px}
+.kosong{color:var(--mut);font-size:14px}
+.muat{color:var(--mut);font-size:14px;padding:12px 0}
+body.siap .muat{display:none}
+#selubung{display:none}
+.user{display:flex;flex-direction:column;align-items:flex-end;line-height:1.2;font-size:13px}
+.user b{font-weight:600;color:#fff;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user span{color:#9fc2bb;font-family:var(--fm);font-size:11.5px}
+.tkeluar{height:34px;padding:0 12px;border-radius:7px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;cursor:pointer;font-size:13px}
+.tkeluar:hover{background:rgba(255,255,255,.08)}
+body:not(.masuk) .wrap,body:not(.masuk) .chip,body:not(.masuk) .user,body:not(.masuk) .tkeluar,body:not(.masuk) #btnLaci{display:none!important}
+#gerbang{display:none;min-height:calc(100vh - 56px);align-items:flex-start;justify-content:center;padding:8vh 16px 40px}
+body.gerbang #gerbang{display:flex}
+.gkartu{width:100%;max-width:400px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:26px 24px}
+.gkartu h2{font-family:var(--fh);font-weight:600;font-size:24px;margin:0 0 6px}
+.gsub{color:var(--mut);font-size:14px;margin:0 0 18px}
+.gkartu label{display:block;font-size:13px;font-weight:600;color:var(--ink2);margin:12px 0 6px}
+.gkartu input{width:100%;height:44px;border:1px solid var(--line);border-radius:8px;padding:0 12px;font-size:16px}
+.gkartu input:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 3px var(--pri-l)}
+.gkartu .btn{width:100%;margin-top:18px;min-height:46px;font-size:15px}
+.gkartu .btn:disabled{opacity:.6}
+.gerr{margin:12px 0 0;padding:10px 12px;border-radius:8px;background:var(--red-l);color:var(--red);font-size:14px;border-left:3px solid var(--red)}
+.ginfo{margin:10px 0 0;font-size:13px;color:var(--mut);text-align:center}
+.ginfo:empty{display:none}
+.gfoot{margin:16px 0 0;font-size:12.5px;color:var(--mut);text-align:center}
+
+@media (max-width:900px){
+  #btnLaci{display:inline-flex;align-items:center}
+  .chip{display:none}
+  .wrap{grid-template-columns:1fr}
+  aside{position:fixed;top:0;left:0;bottom:0;width:min(86vw,340px);max-height:none;z-index:50;transform:translateX(-100%);transition:transform .2s;box-shadow:0 0 0 100vmax rgba(0,0,0,0);padding-top:14px}
+  body.laci aside{transform:none}
+  body.laci #selubung{display:block;position:fixed;inset:0;background:rgba(10,20,17,.45);z-index:40}
+  .tutup{display:flex}
+  .brand span{display:none}
+  .user b{max-width:110px;font-size:12.5px}
+  .tkeluar{padding:0 9px}
+  #btnLaci{white-space:nowrap;font-size:13.5px}
+  main{padding:16px 14px 40px}
+  h1{font-size:22px}
+  .code{height:38vh;min-height:200px}
+  #gutter{width:34px;font-size:13.5px}
+  #editor{font-size:13.5px;padding:12px 10px}
+  .bar .btn .kbd{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg></div>
+  <div class="brand"><b>Lab SQL</b><span>Simulasi MySQL</span></div>
+  <div class="sp"></div>
+  <div class="chip">Database aktif: <b id="dbAktif">-</b></div>
+  <div class="user"><b id="siapa"></b><span id="siapaNim"></span></div>
+  <button type="button" id="btnKeluar" class="tkeluar" title="Keluar">Keluar</button>
+  <button type="button" id="btnLaci">Tabel</button>
+</header>
+<div id="selubung"></div>
+<section id="gerbang" aria-labelledby="gJudul">
+  <form id="gForm" class="gkartu" autocomplete="on">
+    <h2 id="gJudul">Masuk ke Lab SQL</h2>
+    <p class="gsub">Khusus mahasiswa yang terdaftar di kelas SIPANDA. Gunakan NIM dan kode akses yang sama dengan portal nilai.</p>
+    <label for="gNim">NIM</label>
+    <input id="gNim" name="username" inputmode="numeric" autocomplete="username" required>
+    <label for="gPin">Kode akses</label>
+    <input id="gPin" name="password" type="password" autocomplete="current-password">
+    <p id="gErr" class="gerr" role="alert" hidden></p>
+    <button id="gBtn" class="btn pri" type="submit">Masuk</button>
+    <p id="gInfo" class="ginfo"></p>
+    <p class="gfoot">Belum punya kode akses? Minta ke dosen pengampu.</p>
+  </form>
+</section>
+<div class="wrap">
+  <aside>
+    <div class="btns tutup"><button type="button" class="btn sm" id="tutupLaci">Tutup</button></div>
+    <h3>Database</h3>
+    <select id="pilihDb" aria-label="Pilih database"></select>
+    <h3>Tabel</h3>
+    <div id="tabel"><p class="kecil">Memuat...</p></div>
+    <h3>Database contoh</h3>
+    <div class="btns">
+      <button type="button" class="btn sm" id="btnAkademik">Akademik</button>
+      <button type="button" class="btn sm" id="btnToko">Toko online</button>
+    </div>
+    <p class="kecil">Memuat ulang contoh akan mengembalikan isinya seperti semula.</p>
+    <h3>Contoh perintah</h3>
+    <div id="latihan"></div>
+    <div class="foot">
+      <div class="btns" style="margin-bottom:10px"><button type="button" class="btn sm" id="btnDump">Unduh .sql</button><button type="button" class="btn sm" id="btnReset">Hapus semua data</button></div>
+      Data tersimpan di browser perangkat ini saja.<br>Software by Fahmi Yusuf
+    </div>
+  </aside>
+  <main>
+    <h1>Lab SQL</h1>
+    <p class="lead">Tulis perintah MySQL lalu jalankan. Beberapa perintah sekaligus dipisah dengan titik koma. Pesan hasil dan pesan kesalahan meniru MySQL.</p>
+    <div class="ed">
+      <div class="bar">
+        <button type="button" class="btn pri" id="btnJalan"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l12-7.5z"/></svg>Jalankan <span class="kbd">Ctrl+Enter</span></button>
+        <button type="button" class="btn" id="btnBaris" title="Jalankan perintah tempat kursor berada, atau teks yang diblok">Perintah ini <span class="kbd">Ctrl+Shift+Enter</span></button>
+        <button type="button" class="btn" id="btnBersih">Kosongkan</button>
+        <div class="sp"></div>
+        <div class="mode" role="radiogroup" aria-label="Tampilan hasil">
+          <label><input type="radio" name="mode" value="tabel" checked>Tabel</label>
+          <label><input type="radio" name="mode" value="teks">Terminal</label>
+        </div>
+      </div>
+      <div class="code">
+        <pre id="gutter" aria-hidden="true">1</pre>
+        <textarea id="editor" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Editor SQL" placeholder="SELECT * FROM mahasiswa;"></textarea>
+      </div>
+    </div>
+    <div id="hasil"><div class="muat">Menyiapkan mesin SQL...</div></div>
+  </main>
+</div>
+<script src="sql-wasm.js"></script>
+<script src="lab.js"></script>
+</body>
+</html>
