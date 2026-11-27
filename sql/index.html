@@ -70,7 +70,13 @@ aside select{width:100%;height:38px;font-weight:600;border:1px solid var(--line)
 .tbact{display:flex;gap:6px;padding:0 10px 10px 24px}
 .tbact button{font-size:12px;border:1px solid var(--line);background:#fff;border-radius:6px;padding:3px 8px;cursor:pointer}
 .tbact button:hover{border-color:var(--pri);color:var(--pri)}
-.lg h4{font-size:13px;font-weight:600;margin:12px 0 4px;color:var(--ink2)}
+.lg{border:1px solid var(--line2);border-radius:8px;margin-bottom:6px;background:#fff}
+.lg summary{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;cursor:pointer;list-style:none;font-size:13.5px;font-weight:600;color:var(--ink)}
+.lg summary::-webkit-details-marker{display:none}
+.lg summary::after{content:"";width:6px;height:6px;border-right:1.5px solid var(--mut);border-bottom:1.5px solid var(--mut);transform:rotate(45deg);transition:transform .15s;flex:none;margin-right:2px}
+.lg[open] summary::after{transform:rotate(-135deg)}
+.lg[open]{border-color:var(--line)}
+.lgi{padding:0 6px 6px}
 .lg button{display:block;width:100%;text-align:left;border:0;background:none;padding:5px 8px;border-radius:6px;font-size:13.5px;color:var(--ink2);cursor:pointer}
 .lg button:hover{background:var(--pri-l);color:var(--pri-d)}
 .foot{margin-top:22px;padding-top:14px;border-top:1px solid var(--line2);font-size:12px;color:var(--mut)}
@@ -120,9 +126,18 @@ body.siap .muat{display:none}
 html.dalamFrame .tkembali{display:none}
 .edfoot{display:flex;gap:12px;align-items:center;padding:7px 12px;border-top:1px solid var(--line2);background:#fbfcfc;font-size:12.5px;color:var(--mut)}
 .edfoot b{font-family:var(--fm);font-weight:500;color:var(--ink2)}
-.tkeluar{height:34px;padding:0 12px;border-radius:7px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;cursor:pointer;font-size:13px}
-.tkeluar:hover{background:rgba(255,255,255,.08)}
-body:not(.masuk) .wrap,body:not(.masuk) .chip,body:not(.masuk) .user,body:not(.masuk) .tkeluar,body:not(.masuk) #btnLaci{display:none!important}
+.ava{width:34px;height:34px;border-radius:50%;background:var(--gold);color:var(--pri-d);font-weight:700;font-size:12.5px;display:flex;align-items:center;justify-content:center;flex:none}
+.ava:empty{display:none}
+.tkeluar{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:7px;border:0;background:#C0392B;color:#fff;cursor:pointer;font-size:13px;font-weight:600}
+.tkeluar:hover{background:#A93226}
+.tkeluar svg{width:15px;height:15px}
+.dbpill{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 11px;border-radius:999px;background:var(--pri-l);color:var(--pri-d);font-size:12.5px;white-space:nowrap}
+.dbpill svg{width:14px;height:14px}
+.dbpill b{font-family:var(--fm);font-weight:600}
+.aksi{display:grid;gap:6px;margin-bottom:12px}
+.aksi .btn{width:100%}
+.aksi .btn b{font-family:var(--fm);font-weight:600;margin-left:3px}
+body:not(.masuk) .wrap,body:not(.masuk) .ava,body:not(.masuk) .user,body:not(.masuk) .tkeluar,body:not(.masuk) #btnLaci{display:none!important}
 #gerbang{display:none;min-height:calc(100vh - 56px);align-items:flex-start;justify-content:center;padding:8vh 16px 40px}
 body.gerbang #gerbang{display:flex}
 .gkartu{width:100%;max-width:400px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:26px 24px}
@@ -153,6 +168,7 @@ body.gerbang #gerbang{display:flex}
   main{padding:16px 14px 40px}
   .tkembali{margin-left:4px;padding:0 9px}
   .tkembali span{display:none}
+  .dbpill .dbl{display:none}
   .edfoot{display:none}
   .code{height:38vh;min-height:200px}
   #gutter{width:34px;font-size:13.5px}
@@ -162,6 +178,8 @@ body.gerbang #gerbang{display:flex}
 @media (max-width:520px){
   .top{gap:8px;padding:0 10px}
   .user{display:none}
+  .tkeluar span{display:none}
+  .tkeluar{padding:0 9px}
   .mark{width:30px;height:30px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -174,9 +192,9 @@ body.gerbang #gerbang{display:flex}
   <div class="brand"><b>Lab SQL</b><span>Simulasi MySQL</span></div>
   <a class="tkembali" href="../" target="_top" title="Kembali ke Portal Penilaian Mahasiswa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span>Kembali ke Penilaian</span></a>
   <div class="sp"></div>
-  <div class="chip">Database aktif: <b id="dbAktif">-</b></div>
   <div class="user"><b id="siapa"></b><span id="siapaNim"></span></div>
-  <button type="button" id="btnKeluar" class="tkeluar" title="Keluar">Keluar</button>
+  <div class="ava" id="siapaAva" aria-hidden="true"></div>
+  <button type="button" id="btnKeluar" class="tkeluar" title="Keluar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg><span>Keluar</span></button>
   <button type="button" id="btnLaci">Tabel</button>
 </header>
 <div id="selubung"></div>
@@ -209,17 +227,10 @@ body.gerbang #gerbang{display:flex}
     <select id="pilihDb" aria-label="Pilih database"></select>
     <h3>Tabel</h3>
     <div id="tabel"><p class="kecil">Memuat...</p></div>
-    <h3>Database contoh</h3>
-    <div class="btns tiga">
-      <button type="button" class="btn sm" id="btnUmkm">UMKM</button>
-      <button type="button" class="btn sm" id="btnAkademik">Akademik</button>
-      <button type="button" class="btn sm" id="btnToko">Toko</button>
-    </div>
-    <p class="kecil">Memuat ulang contoh akan mengembalikan isinya seperti semula.</p>
-    <h3>Contoh perintah</h3>
+    <h3 id="judulContoh">Contoh perintah</h3>
     <div id="latihan"></div>
     <div class="foot">
-      <div class="btns" style="margin-bottom:10px"><button type="button" class="btn sm" id="btnDump">Unduh .sql</button><button type="button" class="btn sm" id="btnReset">Hapus semua data</button></div>
+      <div class="aksi"><button type="button" class="btn sm" id="btnPulih" hidden>Kembalikan data awal <b id="pulihNama"></b></button><button type="button" class="btn sm" id="btnDump">Unduh .sql</button></div>
       Data tersimpan di browser perangkat ini saja.<br>Software by Fahmi Yusuf
     </div>
   </aside>
@@ -230,6 +241,7 @@ body.gerbang #gerbang{display:flex}
         <button type="button" class="btn" id="btnBaris" title="Jalankan perintah tempat kursor berada, atau teks yang diblok">Perintah ini <span class="kbd">Ctrl+Shift+Enter</span></button>
         <button type="button" class="btn" id="btnBersih">Kosongkan</button>
         <div class="sp"></div>
+        <span class="dbpill" title="Database tempat perintah dijalankan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/></svg><span class="dbl">Dijalankan di</span> <b id="dbAktif">-</b></span>
         <div class="mode" role="radiogroup" aria-label="Tampilan hasil">
           <label><input type="radio" name="mode" value="tabel" checked>Tabel</label>
           <label><input type="radio" name="mode" value="teks">Terminal</label>
