@@ -391,7 +391,10 @@ function render(out) {
 function renderStruktur() {
   var sel = $('#pilihDb');
   var nama = Object.keys(dbs).sort();
-  sel.innerHTML = (cur ? '' : '<option value="">(belum memilih)</option>') + nama.map(function (n) { return '<option ' + (n === cur ? 'selected' : '') + '>' + esc(n) + '</option>'; }).join('');
+  var belum = ['umkm', 'akademik', 'toko'].filter(function (n) { return !dbs[n]; });
+  sel.innerHTML = (cur ? '' : '<option value="">(belum memilih)</option>') + nama.map(function (n) { return '<option ' + (n === cur ? 'selected' : '') + '>' + esc(n) + '</option>'; }).join('') +
+    (belum.length ? '<optgroup label="Muat database contoh">' + belum.map(function (n) { return '<option value="__muat:' + n + '">' + esc(NAMA_CONTOH[n]) + '</option>'; }).join('') + '</optgroup>' : '');
+  renderLatihan();
   $('#dbAktif').textContent = cur || 'belum ada';
   var box = $('#tabel');
   if (!cur || !dbs[cur]) { box.innerHTML = '<p class="kecil">Buat database dengan <code>CREATE DATABASE nama;</code> atau muat contoh di bawah.</p>'; return; }
@@ -455,66 +458,120 @@ var CONTOH = {
     "INSERT INTO detail_pesanan VALUES (1,1,2,55000),(1,4,1,45000),(2,2,1,175000),(3,3,1,120000),(3,1,3,55000),(4,6,1,210000),(4,5,2,95000),(5,4,2,45000),(6,2,2,175000),(7,1,1,55000),(7,3,1,120000);"
   ]
 };
-var LATIHAN = [
-  ['UMKM: penjualan', [
-    ['Lihat tabel UMKM', 'USE umkm;\nSHOW TABLES;'],
-    ['100 transaksi terakhir', 'SELECT no_nota, tanggal, kanal, metode_bayar, status\nFROM penjualan\nORDER BY tanggal DESC, id DESC\nLIMIT 10;'],
-    ['Isi satu nota', "SELECT pr.nama, d.jumlah, d.harga_satuan,\n       d.jumlah * d.harga_satuan AS subtotal\nFROM detail_penjualan d\nJOIN produk pr ON pr.id = d.produk_id\nWHERE d.penjualan_id = 1;"],
-    ['Omzet per bulan', "SELECT DATE_FORMAT(pj.tanggal, '%Y-%m') AS bulan,\n       COUNT(DISTINCT pj.id) AS transaksi,\n       SUM(d.jumlah * d.harga_satuan) AS omzet\nFROM penjualan pj\nJOIN detail_penjualan d ON d.penjualan_id = pj.id\nWHERE pj.status = 'Selesai'\nGROUP BY bulan\nORDER BY bulan;"],
-    ['Produk terlaris', "SELECT pr.nama, pr.kategori, SUM(d.jumlah) AS terjual\nFROM detail_penjualan d\nJOIN produk pr ON pr.id = d.produk_id\nJOIN penjualan pj ON pj.id = d.penjualan_id\nWHERE pj.status = 'Selesai'\nGROUP BY pr.id\nORDER BY terjual DESC\nLIMIT 5;"],
-    ['Laba kotor per kategori', "SELECT kategori,\n       SUM(subtotal) AS omzet,\n       SUM(laba_kotor) AS laba_kotor,\n       ROUND(SUM(laba_kotor) * 100.0 / SUM(subtotal), 1) AS margin_persen\nFROM v_penjualan\nWHERE status = 'Selesai'\nGROUP BY kategori\nORDER BY laba_kotor DESC;"],
-    ['Penjualan per kanal', "SELECT kanal, COUNT(*) AS transaksi\nFROM penjualan\nWHERE status = 'Selesai'\nGROUP BY kanal\nORDER BY transaksi DESC;"],
-    ['Pelanggan paling loyal', "SELECT pl.nama, pl.kota, pl.tipe, COUNT(pj.id) AS kali_belanja\nFROM pelanggan pl\nJOIN penjualan pj ON pj.pelanggan_id = pl.id\nGROUP BY pl.id\nHAVING COUNT(pj.id) >= 3\nORDER BY kali_belanja DESC;"],
-    ['Pembeli langsung (tanpa akun)', 'SELECT COUNT(*) AS jumlah\nFROM penjualan\nWHERE pelanggan_id IS NULL;'],
-    ['Hari paling ramai', "SELECT DAYNAME(tanggal) AS hari, COUNT(*) AS transaksi\nFROM penjualan\nGROUP BY hari\nORDER BY transaksi DESC;"],
-    ['Stok menipis', 'SELECT nama, stok FROM produk\nWHERE stok < 15\nORDER BY stok;']
-  ]],
-  ['Dasar', [
-    ['Lihat semua database', 'SHOW DATABASES;'],
-    ['Pilih database', 'USE akademik;\nSHOW TABLES;'],
-    ['Struktur tabel', 'DESCRIBE mahasiswa;'],
-    ['Semua data', 'SELECT * FROM mahasiswa;'],
-    ['Kolom tertentu', 'SELECT nim, nama, prodi FROM mahasiswa;']
-  ]],
-  ['Filter dan urutan', [
-    ['WHERE', "SELECT nama, kota, ipk\nFROM mahasiswa\nWHERE kota = 'Lamongan';"],
-    ['AND / OR', "SELECT nama, prodi, ipk\nFROM mahasiswa\nWHERE prodi = 'Bisnis Digital' AND ipk >= 3.5;"],
-    ['LIKE', "SELECT nama FROM mahasiswa\nWHERE nama LIKE '%Putri%';"],
-    ['BETWEEN dan IN', "SELECT nama, angkatan, ipk FROM mahasiswa\nWHERE ipk BETWEEN 3.0 AND 3.6\n  AND angkatan IN (2023, 2024);"],
-    ['IS NULL', 'SELECT nim, nama FROM mahasiswa WHERE ipk IS NULL;'],
-    ['ORDER BY dan LIMIT', 'SELECT nama, ipk FROM mahasiswa\nORDER BY ipk DESC\nLIMIT 3;']
-  ]],
-  ['Agregasi', [
-    ['COUNT, AVG, MAX', 'SELECT COUNT(*) AS jumlah,\n       ROUND(AVG(ipk), 2) AS rata_ipk,\n       MAX(ipk) AS ipk_tertinggi\nFROM mahasiswa;'],
-    ['GROUP BY', 'SELECT prodi, COUNT(*) AS jumlah, ROUND(AVG(ipk), 2) AS rata_ipk\nFROM mahasiswa\nGROUP BY prodi;'],
-    ['HAVING', 'SELECT kota, COUNT(*) AS jumlah\nFROM mahasiswa\nGROUP BY kota\nHAVING COUNT(*) >= 2;']
-  ]],
-  ['Relasi (JOIN)', [
-    ['INNER JOIN', 'SELECT m.nama, mk.nama AS matakuliah, n.nilai_angka, n.nilai_huruf\nFROM nilai n\nJOIN mahasiswa m ON m.nim = n.nim\nJOIN matakuliah mk ON mk.kode = n.kode\nORDER BY m.nama;'],
-    ['LEFT JOIN', 'SELECT m.nama, COUNT(n.id) AS jumlah_mk\nFROM mahasiswa m\nLEFT JOIN nilai n ON n.nim = m.nim\nGROUP BY m.nim, m.nama;'],
-    ['Tiga tabel + dosen', 'SELECT mk.nama AS matakuliah, d.nama AS dosen, COUNT(n.id) AS peserta\nFROM matakuliah mk\nJOIN dosen d ON d.nidn = mk.nidn\nLEFT JOIN nilai n ON n.kode = mk.kode\nGROUP BY mk.kode;']
-  ]],
-  ['Subquery dan VIEW', [
-    ['Subquery', 'SELECT nama, ipk FROM mahasiswa\nWHERE ipk > (SELECT AVG(ipk) FROM mahasiswa);'],
-    ['CREATE VIEW', "CREATE VIEW v_transkrip AS\nSELECT m.nim, m.nama, mk.nama AS matakuliah, n.nilai_huruf\nFROM nilai n\nJOIN mahasiswa m ON m.nim = n.nim\nJOIN matakuliah mk ON mk.kode = n.kode;\n\nSELECT * FROM v_transkrip WHERE nim = '2401001';"]
-  ]],
-  ['Ubah data (DML)', [
-    ['INSERT', "INSERT INTO mahasiswa (nim, nama, jenis_kelamin, prodi, angkatan, kota, ipk)\nVALUES ('2401011', 'Kartika Sari', 'P', 'Teknologi Informasi', 2024, 'Lamongan', 3.30);"],
-    ['UPDATE', "UPDATE mahasiswa SET kota = 'Surabaya'\nWHERE nim = '2401011';"],
-    ['DELETE', "DELETE FROM mahasiswa WHERE nim = '2401011';"],
-    ['Coba langgar FOREIGN KEY', "INSERT INTO nilai (nim, kode, nilai_angka) VALUES ('9999999', 'TI201', 80);"]
-  ]],
-  ['Struktur (DDL)', [
-    ['CREATE DATABASE dan TABLE', "CREATE DATABASE latihan;\nUSE latihan;\n\nCREATE TABLE buku (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  judul VARCHAR(100) NOT NULL,\n  penulis VARCHAR(80),\n  tahun INT,\n  harga DECIMAL(10,2) DEFAULT 0\n) ENGINE=InnoDB;\n\nDESCRIBE buku;"],
-    ['ALTER TABLE ADD', 'ALTER TABLE buku ADD COLUMN stok INT DEFAULT 0;\nDESCRIBE buku;'],
-    ['DROP TABLE', 'DROP TABLE buku;']
-  ]],
-  ['Toko online', [
-    ['Muat dulu database toko', 'USE toko;\nSHOW TABLES;'],
-    ['Total belanja per pesanan', "SELECT p.id, pl.nama, p.tanggal,\n       SUM(d.jumlah * d.harga_satuan) AS total\nFROM pesanan p\nJOIN pelanggan pl ON pl.id = p.pelanggan_id\nJOIN detail_pesanan d ON d.pesanan_id = p.id\nWHERE p.status <> 'batal'\nGROUP BY p.id\nORDER BY total DESC;"],
-    ['Produk terlaris', 'SELECT pr.nama, SUM(d.jumlah) AS terjual\nFROM detail_pesanan d\nJOIN produk pr ON pr.id = d.produk_id\nGROUP BY pr.id\nORDER BY terjual DESC;']
-  ]]
-];
+/* Contoh perintah, dikelompokkan per database. Panel kiri hanya menampilkan contoh untuk database yang aktif. */
+var LATIHAN = {
+  umkm: [
+    ['Dasar', [
+      ['Lihat semua tabel', 'SHOW TABLES;'],
+      ['Struktur tabel produk', 'DESCRIBE produk;'],
+      ['Isi tabel produk', 'SELECT * FROM produk;'],
+      ['Kolom tertentu', 'SELECT nama, kategori, harga_jual\nFROM produk;']
+    ]],
+    ['Menyaring dan mengurutkan', [
+      ['WHERE', 'SELECT nama, harga_jual\nFROM produk\nWHERE harga_jual <= 20000;'],
+      ['AND / OR', "SELECT nama, harga_jual\nFROM produk\nWHERE kategori = 'Minuman'\n  AND harga_jual >= 40000;"],
+      ['LIKE', "SELECT id, nama\nFROM produk\nWHERE nama LIKE '%Wingko%';"],
+      ['IN', "SELECT nama, kota\nFROM pelanggan\nWHERE kota IN ('Lamongan', 'Gresik');"],
+      ['IS NULL', 'SELECT no_nota, tanggal, kanal\nFROM penjualan\nWHERE pelanggan_id IS NULL;'],
+      ['ORDER BY dan LIMIT', 'SELECT nama, stok\nFROM produk\nORDER BY stok ASC\nLIMIT 3;']
+    ]],
+    ['Menghitung', [
+      ['COUNT, SUM, MAX, AVG', 'SELECT COUNT(*) AS jumlah_produk,\n       SUM(stok) AS total_stok,\n       MAX(harga_jual) AS termahal,\n       ROUND(AVG(harga_jual)) AS rata_harga\nFROM produk;'],
+      ['Kolom hitungan', 'SELECT nama,\n  harga_jual - harga_beli AS laba_per_unit\nFROM produk\nORDER BY laba_per_unit DESC;'],
+      ['GROUP BY', 'SELECT kategori, COUNT(*) AS jumlah_produk\nFROM produk\nGROUP BY kategori;'],
+      ['Penjualan per kanal', "SELECT kanal, COUNT(*) AS transaksi\nFROM penjualan\nWHERE status = 'Selesai'\nGROUP BY kanal\nORDER BY transaksi DESC;"],
+      ['HAVING', 'SELECT kota, COUNT(*) AS jumlah\nFROM pelanggan\nGROUP BY kota\nHAVING COUNT(*) >= 4;']
+    ]],
+    ['Menggabungkan tabel', [
+      ['Nota dan pelanggannya', 'SELECT pj.no_nota, pj.tanggal, pl.nama AS pelanggan\nFROM penjualan pj\nJOIN pelanggan pl ON pl.id = pj.pelanggan_id\nLIMIT 10;'],
+      ['Isi satu nota', 'SELECT pr.nama, d.jumlah, d.harga_satuan,\n       d.jumlah * d.harga_satuan AS subtotal\nFROM detail_penjualan d\nJOIN produk pr ON pr.id = d.produk_id\nWHERE d.penjualan_id = 1;'],
+      ['LEFT JOIN', "SELECT pj.no_nota, COALESCE(pl.nama, 'Pembeli langsung') AS pelanggan\nFROM penjualan pj\nLEFT JOIN pelanggan pl ON pl.id = pj.pelanggan_id\nLIMIT 10;"],
+      ['Produk terlaris', "SELECT pr.nama, SUM(d.jumlah) AS terjual\nFROM detail_penjualan d\nJOIN produk pr ON pr.id = d.produk_id\nJOIN penjualan pj ON pj.id = d.penjualan_id\nWHERE pj.status = 'Selesai'\nGROUP BY pr.id\nORDER BY terjual DESC\nLIMIT 5;"],
+      ['Omzet per bulan', "SELECT DATE_FORMAT(pj.tanggal, '%Y-%m') AS bulan,\n       SUM(d.jumlah * d.harga_satuan) AS omzet\nFROM penjualan pj\nJOIN detail_penjualan d ON d.penjualan_id = pj.id\nWHERE pj.status = 'Selesai'\nGROUP BY bulan\nORDER BY bulan;"],
+      ['Pelanggan paling loyal', 'SELECT pl.nama, pl.kota, COUNT(pj.id) AS kali_belanja\nFROM pelanggan pl\nJOIN penjualan pj ON pj.pelanggan_id = pl.id\nGROUP BY pl.id\nHAVING COUNT(pj.id) >= 3\nORDER BY kali_belanja DESC;'],
+      ['Laba per kategori (view)', "SELECT kategori, SUM(subtotal) AS omzet, SUM(laba_kotor) AS laba_kotor\nFROM v_penjualan\nWHERE status = 'Selesai'\nGROUP BY kategori\nORDER BY laba_kotor DESC;"]
+    ]],
+    ['Mengubah data', [
+      ['INSERT', "INSERT INTO produk (nama, kategori, satuan, harga_beli, harga_jual, stok)\nVALUES ('Wingko Babat Pandan', 'Makanan Khas', 'kotak', 25000, 35000, 20);"],
+      ['UPDATE', "UPDATE produk SET harga_jual = 34000\nWHERE nama = 'Wingko Babat Pandan';"],
+      ['DELETE', "DELETE FROM produk\nWHERE nama = 'Wingko Babat Pandan';"],
+      ['Coba langgar FOREIGN KEY', 'DELETE FROM produk WHERE id = 1;']
+    ]]
+  ],
+  akademik: [
+    ['Dasar', [
+      ['Lihat semua tabel', 'SHOW TABLES;'],
+      ['Struktur tabel', 'DESCRIBE mahasiswa;'],
+      ['Semua data', 'SELECT * FROM mahasiswa;'],
+      ['Kolom tertentu', 'SELECT nim, nama, prodi FROM mahasiswa;']
+    ]],
+    ['Menyaring dan mengurutkan', [
+      ['WHERE', "SELECT nama, kota, ipk\nFROM mahasiswa\nWHERE kota = 'Lamongan';"],
+      ['AND / OR', "SELECT nama, prodi, ipk\nFROM mahasiswa\nWHERE prodi = 'Bisnis Digital' AND ipk >= 3.5;"],
+      ['LIKE', "SELECT nama FROM mahasiswa\nWHERE nama LIKE '%Putri%';"],
+      ['BETWEEN dan IN', 'SELECT nama, angkatan, ipk FROM mahasiswa\nWHERE ipk BETWEEN 3.0 AND 3.6\n  AND angkatan IN (2023, 2024);'],
+      ['IS NULL', 'SELECT nim, nama FROM mahasiswa WHERE ipk IS NULL;'],
+      ['ORDER BY dan LIMIT', 'SELECT nama, ipk FROM mahasiswa\nORDER BY ipk DESC\nLIMIT 3;']
+    ]],
+    ['Menghitung', [
+      ['COUNT, AVG, MAX', 'SELECT COUNT(*) AS jumlah,\n       ROUND(AVG(ipk), 2) AS rata_ipk,\n       MAX(ipk) AS ipk_tertinggi\nFROM mahasiswa;'],
+      ['GROUP BY', 'SELECT prodi, COUNT(*) AS jumlah, ROUND(AVG(ipk), 2) AS rata_ipk\nFROM mahasiswa\nGROUP BY prodi;'],
+      ['HAVING', 'SELECT kota, COUNT(*) AS jumlah\nFROM mahasiswa\nGROUP BY kota\nHAVING COUNT(*) >= 2;']
+    ]],
+    ['Menggabungkan tabel', [
+      ['INNER JOIN', 'SELECT m.nama, mk.nama AS matakuliah, n.nilai_angka, n.nilai_huruf\nFROM nilai n\nJOIN mahasiswa m ON m.nim = n.nim\nJOIN matakuliah mk ON mk.kode = n.kode\nORDER BY m.nama;'],
+      ['LEFT JOIN', 'SELECT m.nama, COUNT(n.id) AS jumlah_mk\nFROM mahasiswa m\nLEFT JOIN nilai n ON n.nim = m.nim\nGROUP BY m.nim, m.nama;'],
+      ['Tiga tabel + dosen', 'SELECT mk.nama AS matakuliah, d.nama AS dosen, COUNT(n.id) AS peserta\nFROM matakuliah mk\nJOIN dosen d ON d.nidn = mk.nidn\nLEFT JOIN nilai n ON n.kode = mk.kode\nGROUP BY mk.kode;'],
+      ['Subquery', 'SELECT nama, ipk FROM mahasiswa\nWHERE ipk > (SELECT AVG(ipk) FROM mahasiswa);']
+    ]],
+    ['Mengubah data', [
+      ['INSERT', "INSERT INTO mahasiswa (nim, nama, jenis_kelamin, prodi, angkatan, kota, ipk)\nVALUES ('2401011', 'Kartika Sari', 'P', 'Teknologi Informasi', 2024, 'Lamongan', 3.30);"],
+      ['UPDATE', "UPDATE mahasiswa SET kota = 'Surabaya'\nWHERE nim = '2401011';"],
+      ['DELETE', "DELETE FROM mahasiswa WHERE nim = '2401011';"],
+      ['Coba langgar FOREIGN KEY', "INSERT INTO nilai (nim, kode, nilai_angka) VALUES ('9999999', 'TI201', 80);"]
+    ]]
+  ],
+  toko: [
+    ['Dasar', [
+      ['Lihat semua tabel', 'SHOW TABLES;'],
+      ['Isi tabel pesanan', 'SELECT * FROM pesanan;'],
+      ['Pesanan yang belum selesai', "SELECT id, tanggal, status\nFROM pesanan\nWHERE status <> 'selesai';"]
+    ]],
+    ['Menggabungkan tabel', [
+      ['Total belanja per pesanan', 'SELECT p.id, pl.nama, p.tanggal,\n       SUM(d.jumlah * d.harga_satuan) AS total\nFROM pesanan p\nJOIN pelanggan pl ON pl.id = p.pelanggan_id\nJOIN detail_pesanan d ON d.pesanan_id = p.id\nGROUP BY p.id\nORDER BY p.tanggal;'],
+      ['Produk terlaris', 'SELECT pr.nama, SUM(d.jumlah) AS terjual\nFROM detail_pesanan d\nJOIN produk pr ON pr.id = d.produk_id\nGROUP BY pr.id\nORDER BY terjual DESC;']
+    ]]
+  ],
+  /* selalu tampil di bawah, untuk database apa pun */
+  umum: [
+    ['Membuat database sendiri', [
+      ['CREATE DATABASE dan TABLE', "CREATE DATABASE latihan;\nUSE latihan;\n\nCREATE TABLE buku (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  judul VARCHAR(100) NOT NULL,\n  penulis VARCHAR(80),\n  tahun INT,\n  harga DECIMAL(10,2) DEFAULT 0\n) ENGINE=InnoDB;\n\nDESCRIBE buku;"],
+      ['ALTER TABLE ADD', 'ALTER TABLE buku ADD COLUMN stok INT DEFAULT 0;\nDESCRIBE buku;'],
+      ['DROP TABLE', 'DROP TABLE buku;'],
+      ['Lihat semua database', 'SHOW DATABASES;'],
+      ['Pindah database', 'USE umkm;']
+    ]]
+  ]
+};
+var latihanTampil = [];
+var NAMA_CONTOH = { umkm: 'UMKM (toko oleh-oleh)', akademik: 'Akademik', toko: 'Toko online' };
+function renderLatihan() {
+  var box = $('#latihan'); if (!box) return;
+  latihanTampil = (LATIHAN[cur] || []).concat(LATIHAN.umum);
+  $('#judulContoh').textContent = cur ? 'Contoh perintah untuk ' + cur : 'Contoh perintah';
+  box.innerHTML = latihanTampil.map(function (g, gi) {
+    return '<details class="lg"' + (gi === 0 ? ' open' : '') + '><summary>' + esc(g[0]) + '</summary><div class="lgi">' +
+      g[1].map(function (it, ii) { return '<button type="button" data-contoh data-g="' + gi + '" data-i="' + ii + '">' + esc(it[0]) + '</button>'; }).join('') + '</div></details>';
+  }).join('');
+  var p = $('#btnPulih');
+  if (p) { if (CONTOH[cur]) { p.hidden = false; $('#pulihNama').textContent = cur; } else p.hidden = true; }
+}
+function pulihkan() {
+  if (!CONTOH[cur]) return;
+  if (!confirm('Kembalikan database ' + cur + ' ke isi awal?\n\nSemua perubahan yang kamu buat di database ' + cur + ' akan hilang. Database lain tidak berubah.')) return;
+  muatContoh(cur);
+}
+function inisial(n) { return String(n || '').split(/\s+/).filter(Boolean).slice(0, 2).map(function (x) { return x.charAt(0).toUpperCase(); }).join('') || '?'; }
 
 /* ===================== antarmuka ===================== */
 function sisip(sql) {
@@ -585,12 +642,9 @@ function siapkanUI() {
   $('#btnJalan').addEventListener('click', function () { eksekusi(ed.value); });
   $('#btnBaris').addEventListener('click', function () { eksekusi(perintahDiKursor()); });
   $('#btnBersih').addEventListener('click', function () { ed.value = ''; barisNo(); ed.focus(); });
-  $('#pilihDb').addEventListener('change', function () { if (this.value) { cur = this.value; simpan(); renderStruktur(); render([{ sql: 'USE ' + cur, r: { pesan: 'Database changed', waktu: null } }]); } });
-  var bU = $('#btnUmkm'); if (bU) bU.addEventListener('click', function () { muatContoh('umkm'); });
-  $('#btnAkademik').addEventListener('click', function () { muatContoh('akademik'); });
-  $('#btnToko').addEventListener('click', function () { muatContoh('toko'); });
+  $('#pilihDb').addEventListener('change', function () { if (this.value.indexOf('__muat:') === 0) { muatContoh(this.value.slice(7)); return; } if (this.value) { cur = this.value; simpan(); renderStruktur(); render([{ sql: 'USE ' + cur, r: { pesan: 'Database changed', waktu: null } }]); } });
+  $('#btnPulih').addEventListener('click', pulihkan);
   $('#btnDump').addEventListener('click', dumpSql);
-  $('#btnReset').addEventListener('click', resetSemua);
   $('#btnLaci').addEventListener('click', bukaLaci);
   $('#tutupLaci').addEventListener('click', tutupLaci);
   $('#selubung').addEventListener('click', tutupLaci);
@@ -599,11 +653,9 @@ function siapkanUI() {
   });
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-ins]'); if (b) { sisip(b.getAttribute('data-ins')); return; }
-    var c = e.target.closest('[data-contoh]'); if (c) { var it = LATIHAN[+c.dataset.g][1][+c.dataset.i]; sisip(it[1]); }
+    var c = e.target.closest('[data-contoh]'); if (c) { var it = latihanTampil[+c.dataset.g][1][+c.dataset.i]; sisip(it[1]); }
   });
-  $('#latihan').innerHTML = LATIHAN.map(function (g, gi) {
-    return '<div class="lg"><h4>' + esc(g[0]) + '</h4>' + g[1].map(function (it, ii) { return '<button type="button" data-contoh data-g="' + gi + '" data-i="' + ii + '">' + esc(it[0]) + '</button>'; }).join('') + '</div>';
-  }).join('');
+  renderLatihan();
   var renderAsli = render;
   render = function (o) { window.__terakhir = o; renderAsli(o); };
   try { mode = localStorage.getItem(SIMPAN + '-mode') || 'tabel'; riwayat = JSON.parse(localStorage.getItem(SIMPAN + '-riwayat') || '[]'); } catch (e) {}
@@ -647,6 +699,7 @@ function masuk(a) {
   document.body.classList.remove('gerbang'); document.body.classList.add('masuk');
   $('#siapa').textContent = a.peran === 'dosen' ? 'Dosen' : a.nama;
   $('#siapaNim').textContent = a.peran === 'dosen' ? 'akses dosen' : a.nim;
+  $('#siapaAva').textContent = a.peran === 'dosen' ? 'D' : inisial(a.nama);
   var mulai = function () {
     Object.keys(dbs).forEach(function (n) { try { dbs[n].close(); } catch (e) {} }); dbs = {}; cur = '';
     if (!muat()) {
