@@ -4,7 +4,7 @@
 'use strict';
 
 /* ====== Alamat aplikasi SIPANDA (Apps Script /exec) untuk memeriksa NIM mahasiswa ====== */
-var API = 'https://script.google.com/macros/s/AKfycbw7iVXJzsujEHRa9JG34Ly3BGf5XGxgCmOORmoID1J9APwR7cvuEfcQnkVuDZpksDh0/exec';
+var API = 'https://script.google.com/macros/s/AKfycbw8w9AuolE13hXQg2x9vqzx752aAqih0yS_i6rUSGG93lw4DA-X9_LLI4p8fiCFjWEn/exec';
 /* ========================================================================================= */
 var SIMPAN = 'sipanda-labsql-v1', AUTH = 'sipanda-labsql-auth';
 var SQL = null, dbs = {}, cur = '', mode = 'tabel', riwayat = [], akun = null;
@@ -678,13 +678,21 @@ function gerbang() {
 
 window.addEventListener('DOMContentLoaded', function () {
   siapkanUI(); barisNo();
-  var buatPin = false;
+  var buatPin = false, pinLen = 6;
+  var aturPanjang = function (n) {
+    n = Number(n); if (!(n >= 4 && n <= 8)) return;
+    pinLen = n;
+    ['#gPin', '#gPin1', '#gPin2'].forEach(function (id) { $(id).maxLength = n; });
+    $('#gLbl1').textContent = 'PIN baru (' + n + ' angka)';
+  };
+  // panjang PIN mengikuti pengaturan SIPANDA
+  kirim({ aksi: 'info' }).then(function (j) { if (j && j.ok) aturPanjang(j.panjangPin); }, function () {});
   window.__modeLogin = function (baru) {
     buatPin = baru;
     $('#gLama').hidden = baru; $('#gBaru').hidden = !baru; $('#gNim').readOnly = baru;
     $('#gJudul').textContent = baru ? 'Buat PIN' : 'Masuk ke Lab SQL';
-    $('#gSub').textContent = baru ? 'NIM ini belum punya PIN. Buat PIN sendiri. PIN yang sama juga dipakai di portal nilai.'
-      : 'Khusus mahasiswa yang terdaftar di kelas SIPANDA. Gunakan NIM dan PIN yang sama dengan portal nilai.';
+    $('#gSub').textContent = baru ? 'NIM ini belum punya PIN. Buat PIN sendiri. PIN yang sama dipakai juga di Portal Nilai dan Kuis.'
+      : 'Khusus mahasiswa yang terdaftar di kelas SIPANDA. Gunakan NIM dan PIN yang sama dengan Portal Nilai dan Kuis.';
     $('#gBtn').textContent = baru ? 'Simpan PIN dan Masuk' : 'Masuk';
     $('#gFoot').innerHTML = baru ? '<a href="#" id="gBatal">Bukan NIM saya, kembali</a>' : 'Baru pertama kali? Isi NIM saja, lalu buat PIN sendiri. Lupa PIN? Minta dosen meresetnya.';
     if (baru) { $('#gBatal').onclick = function (ev) { ev.preventDefault(); $('#gErr').hidden = true; window.__modeLogin(false); }; $('#gPin1').focus(); }
@@ -696,9 +704,9 @@ window.addEventListener('DOMContentLoaded', function () {
     var d = { aksi: 'login', nim: nim, pin: $('#gPin').value.trim() };
     if (buatPin) {
       var p1 = $('#gPin1').value.trim(), p2 = $('#gPin2').value.trim();
-      if (!/^\d{4,6}$/.test(p1)) { tampilLogin('PIN harus 4 sampai 6 angka.'); return; }
+      if (!new RegExp('^\\d{' + pinLen + '}$').test(p1)) { tampilLogin('PIN harus ' + pinLen + ' angka.'); return; }
       if (p1 !== p2) { tampilLogin('Kedua PIN tidak sama. Ketik ulang.'); return; }
-      d = { aksi: 'login', nim: nim, pinBaru: p1 };
+      d = { aksi: 'buatPin', nim: nim, pin: p1 };
     }
     b.disabled = true; b.textContent = 'Memeriksa...'; $('#gErr').hidden = true;
     kirim(d).then(function (j) {
@@ -707,7 +715,7 @@ window.addEventListener('DOMContentLoaded', function () {
         $('#gPin').value = $('#gPin1').value = $('#gPin2').value = '';
         if (buatPin) window.__modeLogin(false);
         masuk(simpanAkun(j.t, j));
-      } else if (j.perluPin) window.__modeLogin(true);
+      } else if (j.perluPin) { aturPanjang(j.panjangPin); window.__modeLogin(true); }
       else tampilLogin(j.pesan);
     }, function (err) { b.disabled = false; b.textContent = label; tampilLogin(err.message); });
   });

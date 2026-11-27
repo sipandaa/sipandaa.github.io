@@ -167,7 +167,7 @@ body.gerbang #gerbang{display:flex}
 <section id="gerbang" aria-labelledby="gJudul">
   <form id="gForm" class="gkartu" autocomplete="on">
     <h2 id="gJudul">Masuk ke Lab SQL</h2>
-    <p class="gsub" id="gSub">Khusus mahasiswa yang terdaftar di kelas SIPANDA. Gunakan NIM dan PIN yang sama dengan portal nilai.</p>
+    <p class="gsub" id="gSub">Khusus mahasiswa yang terdaftar di kelas SIPANDA. Gunakan NIM dan PIN yang sama dengan Portal Nilai dan Kuis.</p>
     <label for="gNim">NIM</label>
     <input id="gNim" name="username" inputmode="numeric" autocomplete="username" required>
     <div id="gLama">
@@ -175,7 +175,7 @@ body.gerbang #gerbang{display:flex}
       <input id="gPin" name="password" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password" placeholder="Kosongkan bila belum punya">
     </div>
     <div id="gBaru" hidden>
-      <label for="gPin1">PIN baru (4 sampai 6 angka)</label>
+      <label for="gPin1" id="gLbl1">PIN baru (6 angka)</label>
       <input id="gPin1" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password">
       <label for="gPin2">Ulangi PIN</label>
       <input id="gPin2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password">
