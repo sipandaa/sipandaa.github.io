@@ -336,7 +336,13 @@ function jalankanSatu(s) {
   if (/^INSERT\b/i.test(s) && n > 1) msg += '\nRecords: ' + n + '  Duplicates: 0  Warnings: 0';
   return { pesan: msg, waktu: dt, ubah: ubahStruktur };
 }
+/* rapikan spasi keras dan tanda kutip miring dari WhatsApp, Word, PDF, atau slide */
+function rapikanTeks(t) {
+  return String(t).replace(/[\u00a0\u2007\u202f\u3000]/g, ' ').replace(/[\u200b\u200c\u200d\ufeff]/g, '')
+    .replace(/[\u2018\u2019\u201a\u2032]/g, "'").replace(/[\u201c\u201d\u201e\u2033]/g, '"');
+}
 function jalankan(teks) {
+  teks = rapikanTeks(teks);
   var daftar = pecah(teks), out = [];
   if (!daftar.length) return out;
   for (var i = 0; i < daftar.length; i++) {
@@ -580,6 +586,7 @@ function siapkanUI() {
   $('#btnBaris').addEventListener('click', function () { eksekusi(perintahDiKursor()); });
   $('#btnBersih').addEventListener('click', function () { ed.value = ''; barisNo(); ed.focus(); });
   $('#pilihDb').addEventListener('change', function () { if (this.value) { cur = this.value; simpan(); renderStruktur(); render([{ sql: 'USE ' + cur, r: { pesan: 'Database changed', waktu: null } }]); } });
+  var bU = $('#btnUmkm'); if (bU) bU.addEventListener('click', function () { muatContoh('umkm'); });
   $('#btnAkademik').addEventListener('click', function () { muatContoh('akademik'); });
   $('#btnToko').addEventListener('click', function () { muatContoh('toko'); });
   $('#btnDump').addEventListener('click', dumpSql);
