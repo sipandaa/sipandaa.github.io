@@ -4,7 +4,7 @@
 'use strict';
 
 /* ====== Alamat aplikasi SIPANDA (Apps Script /exec) untuk memeriksa NIM mahasiswa ====== */
-var API = 'https://script.google.com/macros/s/AKfycbw8w9AuolE13hXQg2x9vqzx752aAqih0yS_i6rUSGG93lw4DA-X9_LLI4p8fiCFjWEn/exec';
+var API = 'https://script.google.com/macros/s/AKfycbw7iVXJzsujEHRa9JG34Ly3BGf5XGxgCmOORmoID1J9APwR7cvuEfcQnkVuDZpksDh0/exec';
 /* ========================================================================================= */
 var SIMPAN = 'sipanda-labsql-v1', AUTH = 'sipanda-labsql-auth';
 var SQL = null, dbs = {}, cur = '', mode = 'tabel', riwayat = [], akun = null;
