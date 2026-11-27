@@ -167,15 +167,23 @@ body.gerbang #gerbang{display:flex}
 <section id="gerbang" aria-labelledby="gJudul">
   <form id="gForm" class="gkartu" autocomplete="on">
     <h2 id="gJudul">Masuk ke Lab SQL</h2>
-    <p class="gsub">Khusus mahasiswa yang terdaftar di kelas SIPANDA. Gunakan NIM dan kode akses yang sama dengan portal nilai.</p>
+    <p class="gsub" id="gSub">Khusus mahasiswa yang terdaftar di kelas SIPANDA. Gunakan NIM dan PIN yang sama dengan portal nilai.</p>
     <label for="gNim">NIM</label>
     <input id="gNim" name="username" inputmode="numeric" autocomplete="username" required>
-    <label for="gPin">Kode akses</label>
-    <input id="gPin" name="password" type="password" autocomplete="current-password">
+    <div id="gLama">
+      <label for="gPin">PIN</label>
+      <input id="gPin" name="password" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password" placeholder="Kosongkan bila belum punya">
+    </div>
+    <div id="gBaru" hidden>
+      <label for="gPin1">PIN baru (4 sampai 6 angka)</label>
+      <input id="gPin1" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password">
+      <label for="gPin2">Ulangi PIN</label>
+      <input id="gPin2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password">
+    </div>
     <p id="gErr" class="gerr" role="alert" hidden></p>
     <button id="gBtn" class="btn pri" type="submit">Masuk</button>
     <p id="gInfo" class="ginfo"></p>
-    <p class="gfoot">Belum punya kode akses? Minta ke dosen pengampu.</p>
+    <p class="gfoot" id="gFoot">Baru pertama kali? Isi NIM saja, lalu buat PIN sendiri. Lupa PIN? Minta dosen meresetnya.</p>
   </form>
 </section>
 <div class="wrap">

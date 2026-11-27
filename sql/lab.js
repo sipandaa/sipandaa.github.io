@@ -629,6 +629,7 @@ function tampilLogin(pesan) {
   setTimeout(function () { var n = $('#gNim'); if (n) n.focus(); }, 50);
 }
 function keluar(pesan) {
+  if (window.__modeLogin) window.__modeLogin(false);
   try { localStorage.removeItem(AUTH); } catch (e) {}
   Object.keys(dbs).forEach(function (n) { try { dbs[n].close(); } catch (e) {} });
   dbs = {}; cur = ''; akun = null;
@@ -677,15 +678,38 @@ function gerbang() {
 
 window.addEventListener('DOMContentLoaded', function () {
   siapkanUI(); barisNo();
+  var buatPin = false;
+  window.__modeLogin = function (baru) {
+    buatPin = baru;
+    $('#gLama').hidden = baru; $('#gBaru').hidden = !baru; $('#gNim').readOnly = baru;
+    $('#gJudul').textContent = baru ? 'Buat PIN' : 'Masuk ke Lab SQL';
+    $('#gSub').textContent = baru ? 'NIM ini belum punya PIN. Buat PIN sendiri. PIN yang sama juga dipakai di portal nilai.'
+      : 'Khusus mahasiswa yang terdaftar di kelas SIPANDA. Gunakan NIM dan PIN yang sama dengan portal nilai.';
+    $('#gBtn').textContent = baru ? 'Simpan PIN dan Masuk' : 'Masuk';
+    $('#gFoot').innerHTML = baru ? '<a href="#" id="gBatal">Bukan NIM saya, kembali</a>' : 'Baru pertama kali? Isi NIM saja, lalu buat PIN sendiri. Lupa PIN? Minta dosen meresetnya.';
+    if (baru) { $('#gBatal').onclick = function (ev) { ev.preventDefault(); $('#gErr').hidden = true; window.__modeLogin(false); }; $('#gPin1').focus(); }
+  };
   $('#gForm').addEventListener('submit', function (e) {
     e.preventDefault();
-    var b = $('#gBtn'), nim = $('#gNim').value.trim(), pin = $('#gPin').value.trim();
+    var b = $('#gBtn'), nim = $('#gNim').value.trim(), label = b.textContent;
     if (!nim) { tampilLogin('Isi NIM terlebih dahulu.'); return; }
+    var d = { aksi: 'login', nim: nim, pin: $('#gPin').value.trim() };
+    if (buatPin) {
+      var p1 = $('#gPin1').value.trim(), p2 = $('#gPin2').value.trim();
+      if (!/^\d{4,6}$/.test(p1)) { tampilLogin('PIN harus 4 sampai 6 angka.'); return; }
+      if (p1 !== p2) { tampilLogin('Kedua PIN tidak sama. Ketik ulang.'); return; }
+      d = { aksi: 'login', nim: nim, pinBaru: p1 };
+    }
     b.disabled = true; b.textContent = 'Memeriksa...'; $('#gErr').hidden = true;
-    kirim({ aksi: 'login', nim: nim, pin: pin }).then(function (j) {
-      b.disabled = false; b.textContent = 'Masuk';
-      if (j.ok) { $('#gPin').value = ''; masuk(simpanAkun(j.t, j)); } else tampilLogin(j.pesan);
-    }, function (err) { b.disabled = false; b.textContent = 'Masuk'; tampilLogin(err.message); });
+    kirim(d).then(function (j) {
+      b.disabled = false; b.textContent = label;
+      if (j.ok) {
+        $('#gPin').value = $('#gPin1').value = $('#gPin2').value = '';
+        if (buatPin) window.__modeLogin(false);
+        masuk(simpanAkun(j.t, j));
+      } else if (j.perluPin) window.__modeLogin(true);
+      else tampilLogin(j.pesan);
+    }, function (err) { b.disabled = false; b.textContent = label; tampilLogin(err.message); });
   });
   $('#btnKeluar').addEventListener('click', function () { if (confirm('Keluar dari Lab SQL? Data latihan tetap tersimpan di perangkat ini.')) keluar(''); });
   gerbang();
