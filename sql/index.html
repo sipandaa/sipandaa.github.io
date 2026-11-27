@@ -5,18 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Lab SQL | SIPANDA</title>
 <meta name="description" content="Lab SQL SIPANDA: simulasi MySQL di browser untuk latihan basis data. ITB Ahmad Dahlan Lamongan.">
-<meta name="theme-color" content="#023f3a">
+<meta name="theme-color" content="#0B1F33">
 <link rel="icon" type="image/png" href="../favicon-32.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" media="print" onload="this.media='all'">
 <link rel="preload" href="sql-wasm.wasm" as="fetch" type="application/wasm" crossorigin>
 <style>
 :root{
-  --pri:#035c54;--pri-d:#023f3a;--pri-l:#e3efed;--gold:#f7ca1e;
-  --bg:#f4f6f5;--card:#fff;--ink:#14201c;--ink2:#34413c;--mut:#5f6c66;--line:#dbe2df;--line2:#edf1ef;
-  --red:#b42318;--red-l:#fdecea;--ok:#035c54;
-  --fh:"IBM Plex Serif",Georgia,serif;--fb:"IBM Plex Sans","Segoe UI",Roboto,Arial,sans-serif;--fm:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --pri:#102A43;--pri-d:#0B1F33;--pri-l:#E4EBF3;--gold:#F2B33D;
+  --bg:#F3F6FA;--card:#fff;--ink:#102A43;--ink2:#334E68;--mut:#486581;--line:#D9E2EC;--line2:#EAF0F6;
+  --red:#b42318;--red-l:#fdecea;--ok:#1b7a4b;
+  --fh:"Plus Jakarta Sans",Inter,system-ui,sans-serif;--fb:Inter,system-ui,"Segoe UI",Roboto,Arial,sans-serif;--fm:"IBM Plex Mono",ui-monospace,Consolas,monospace;
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
@@ -29,9 +29,9 @@ code{font-family:var(--fm);font-size:.92em;background:var(--line2);padding:1px 5
 .mark{width:34px;height:34px;border-radius:8px;background:var(--gold);color:var(--pri-d);display:flex;align-items:center;justify-content:center;flex:none}
 .mark svg{width:20px;height:20px}
 .brand b{display:block;font-family:var(--fh);font-weight:600;font-size:17px;line-height:1.1}
-.brand span{font-size:12px;color:#9fc2bb}
+.brand span{font-size:12px;color:#9FB3C8}
 .top .sp{flex:1}
-.chip{font-size:13px;color:#cfe2de;white-space:nowrap}
+.chip{font-size:13px;color:#BCCCDC;white-space:nowrap}
 .chip b{color:#fff;font-family:var(--fm);font-weight:500}
 #btnLaci{display:none;height:36px;padding:0 12px;border-radius:7px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;cursor:pointer}
 
@@ -42,7 +42,7 @@ aside h3:first-child{margin-top:0}
 aside select{width:100%;height:40px;border:1px solid var(--line);border-radius:8px;padding:0 10px;background:#fff}
 .btns{display:flex;gap:8px;flex-wrap:wrap}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:#fff;font-weight:500;font-size:14px;cursor:pointer;white-space:nowrap}
-.btn:hover{border-color:#b9c4bf;background:#f7f9f8}
+.btn:hover{border-color:#BCCCDC;background:#F7F9FC}
 .btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}
 .btn.pri:hover{background:var(--pri-d)}
 .btn.sm{min-height:32px;padding:0 10px;font-size:13px}
@@ -84,7 +84,7 @@ h1{font-family:var(--fh);font-weight:600;font-size:26px;margin:0}
 .mode input{position:absolute;opacity:0;pointer-events:none}
 .mode label:has(input:checked){background:var(--pri-l);color:var(--pri-d);font-weight:600}
 .code{display:flex;height:300px;position:relative}
-#gutter{flex:none;width:44px;margin:0;padding:12px 8px 12px 0;text-align:right;font:14px/1.6 var(--fm);color:#9aa7a2;background:#f7f9f8;border-right:1px solid var(--line2);overflow:hidden;white-space:pre;user-select:none}
+#gutter{flex:none;width:44px;margin:0;padding:12px 8px 12px 0;text-align:right;font:14px/1.6 var(--fm);color:#829AB1;background:#F7F9FC;border-right:1px solid var(--line2);overflow:hidden;white-space:pre;user-select:none}
 #editor{flex:1;border:0;resize:none;outline:none;padding:12px 14px;font:14px/1.6 var(--fm);color:var(--ink);background:#fff;white-space:pre;overflow:auto;tab-size:2}
 
 #hasil{margin-top:18px;display:flex;flex-direction:column;gap:12px}
@@ -101,18 +101,18 @@ h1{font-family:var(--fh);font-weight:600;font-size:26px;margin:0}
 .tw{overflow:auto;max-height:420px;border:1px solid var(--line2);border-radius:6px}
 table{border-collapse:collapse;font-size:13.5px;min-width:100%}
 th,td{padding:7px 12px;border-bottom:1px solid var(--line2);text-align:left;white-space:nowrap}
-th{position:sticky;top:0;background:#f4f7f6;font-weight:600;font-size:12.5px;color:var(--ink2)}
+th{position:sticky;top:0;background:#F7F9FC;font-weight:600;font-size:12.5px;color:var(--ink2)}
 td.n{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--fm);font-size:13px}
-td.nul{color:#9aa7a2;font-style:italic;font-family:var(--fm);font-size:12.5px}
-tbody tr:hover td{background:#fafcfb}
-.ascii{margin:0;font:13px/1.45 var(--fm);overflow:auto;max-height:420px;background:#0f1b18;color:#d9ece7;padding:12px 14px;border-radius:6px}
+td.nul{color:#829AB1;font-style:italic;font-family:var(--fm);font-size:12.5px}
+tbody tr:hover td{background:#FAFBFD}
+.ascii{margin:0;font:13px/1.45 var(--fm);overflow:auto;max-height:420px;background:#0B1F33;color:#D9E2EC;padding:12px 14px;border-radius:6px}
 .kosong{color:var(--mut);font-size:14px}
 .muat{color:var(--mut);font-size:14px;padding:12px 0}
 body.siap .muat{display:none}
 #selubung{display:none}
 .user{display:flex;flex-direction:column;align-items:flex-end;line-height:1.2;font-size:13px}
 .user b{font-weight:600;color:#fff;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.user span{color:#9fc2bb;font-family:var(--fm);font-size:11.5px}
+.user span{color:#9FB3C8;font-family:var(--fm);font-size:11.5px}
 .tkeluar{height:34px;padding:0 12px;border-radius:7px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;cursor:pointer;font-size:13px}
 .tkeluar:hover{background:rgba(255,255,255,.08)}
 body:not(.masuk) .wrap,body:not(.masuk) .chip,body:not(.masuk) .user,body:not(.masuk) .tkeluar,body:not(.masuk) #btnLaci{display:none!important}
